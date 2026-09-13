@@ -1,0 +1,6 @@
+fastapi>=0.115
+uvicorn[standard]>=0.30
+sqlmodel>=0.0.22
+pwdlib[argon2,bcrypt]>=0.2
+pyjwt>=2.8
+python-multipart>=0.0.9
