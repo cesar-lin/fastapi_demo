@@ -8,6 +8,7 @@
 | 第二课 | `depends_demo.py` | 8001 | 依赖注入（Depends）的 6 种典型用法 |
 | 第三课 | `db_demo.py` | 8002 | 数据库集成（SQLModel + SQLite）完整 CRUD |
 | 第四课 | `auth_demo.py` | 8003 | JWT 用户认证（综合前三课） |
+| 第五课 | `app/` | 8004 | 项目结构整合（标准项目布局） |
 
 ## 快速开始
 
@@ -95,13 +96,41 @@ REST 约定：POST=创建、GET=查询（`offset/limit` 分页）、PATCH=部分
 
 生产环境清单：`SECRET_KEY` 放环境变量且 ≥32 字节随机、refresh token、RS256 非对称算法、HTTPS、注销黑名单（Redis）。
 
+## 第五课：项目结构整合（`app/` 目录）
+
+把前四课的功能按官方推荐的**大项目结构**整合成一个应用，运行：
+
+```bash
+uvicorn app.main:app --reload --port 8004
+```
+
+```
+app/
+├── main.py            # 入口：创建 app、挂载 router、lifespan 初始化（建表+种子数据）
+├── database.py        # engine 与建表函数，全局唯一
+├── dependencies.py    # 共享依赖：SessionDep / PaginationDep / CurrentUser / AdminUser
+├── models/            # SQLModel 表模型 + 出入参模型（hero.py、user.py）
+├── schemas/           # 纯 Pydantic 模型（不落库的：item.py、token.py）
+└── routers/           # APIRouter：items.py、heroes.py、auth.py
+```
+
+核心概念：
+
+- **`APIRouter`**：子路由，用 `prefix`（路径前缀）和 `tags`（文档分组名）定义；入口处 `app.include_router(router)` 统一挂载——路由表只在入口汇总，加新功能只需新建一个 router 文件并在 main.py 加一行
+- **统一依赖模块**：`SessionDep`、`PaginationDep`、`CurrentUser`、`AdminUser` 集中在 `dependencies.py`，任何 router 直接 import——分页依赖同时服务 items 和 heroes 两个路由，认证依赖链（登录→管理员）直接复用在 heroes 的创建/删除接口上
+- **`models/` vs `schemas/` 分工**：落库的 SQLModel 放 models/，纯 API 校验模型放 schemas/
+- **单一数据库**：heroes 和 users 共用 `app.db`（之前 demo 是两个独立库）
+- 原四个课程文件保留在根目录不动，仍可独立运行对照学习
+
+整合后的权限设计：`GET /heroes/` 公开浏览；`POST /heroes/` 需登录（`CurrentUser`）；`DELETE /heroes/` 需管理员（`AdminUser`）——一个应用内三种保护级别。
+
 ---
 
 ## 后续学习方向
 
-- 把 4 个 demo 整合成标准项目结构（`app/routers`、`app/models` 分包，`APIRouter` 组织路由）
-- 限流与缓存（slowapi / Redis）
-- 环境配置管理（pydantic-settings，区分 dev/prod）
+- 环境配置管理（pydantic-settings，区分 dev/prod，SECRET_KEY 入库）
 - Alembic 数据库迁移实战
+- 测试：pytest + TestClient（覆盖认证流程）
 - Docker 打包与生产部署（uvicorn 多进程 + Nginx）
-- 测试：pytest + TestClient
+- 限流与缓存（slowapi / Redis）
+- refresh token 与注销黑名单
