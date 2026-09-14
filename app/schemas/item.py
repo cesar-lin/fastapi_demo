@@ -5,10 +5,10 @@ from pydantic import BaseModel, Field
 
 
 class Item(BaseModel):
-    name: str = Field(..., example="手机", description="商品名称")
-    description: Optional[str] = Field(None, example="一部新手机")
-    price: float = Field(..., gt=0, example=5999.0, description="价格，必须大于 0")
-    tax: Optional[float] = Field(None, example=100.0)
+    name: str = Field(description="商品名称", examples=["手机"])
+    description: Optional[str] = Field(None, examples=["一部新手机"])
+    price: float = Field(..., gt=0, description="价格，必须大于 0", examples=[5999.0])
+    tax: Optional[float] = Field(None, examples=[100.0])
 
 
 class ItemResponse(BaseModel):
