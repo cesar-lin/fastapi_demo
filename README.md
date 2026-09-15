@@ -52,7 +52,8 @@ pytest -v          # 或 python -m pytest -v
 | `/items/{id}` | GET / DELETE | 查询 / 删除商品 | 公开 |
 | `/heroes/` | GET | 英雄列表（数据库，分页） | 公开 |
 | `/heroes/` | POST | 创建英雄 | 需登录 |
-| `/heroes/{id}` | GET / PATCH | 查询 / 部分更新英雄 | 公开 |
+| `/heroes/{id}` | GET | 查询英雄 | 公开 |
+| `/heroes/{id}` | PATCH | 部分更新英雄 | 需登录 |
 | `/heroes/{id}` | DELETE | 删除英雄 | 需管理员 |
 | `/auth/register` | POST | 注册（argon2id 哈希存密码） | 公开 |
 | `/auth/login` | POST | 登录，返回 Bearer token（OAuth2 表单） | 公开 |
@@ -61,7 +62,7 @@ pytest -v          # 或 python -m pytest -v
 
 ## 测试设计（TDD）
 
-`tests/test_app.py` 的 25 个用例即系统行为的完整定义，新增功能应先写测试再实现：
+`tests/test_app.py` 的 26 个用例即系统行为的完整定义，新增功能应先写测试再实现：
 
 - **隔离**：测试用内存 SQLite（`StaticPool`），与开发库 `app.db` 完全无关；每个用例独立建表/清表，互不污染
 - **依赖替换**：`app.dependency_overrides[get_session]` 把数据库会话换成测试会话——这是 FastAPI 测试的核心技巧，无需改业务代码

@@ -136,6 +136,11 @@ def test_read_hero_not_found(client):
     assert client.get("/heroes/999").status_code == 404
 
 
+def test_patch_hero_requires_login(client):
+    r = client.patch("/heroes/1", json={"age": 30})
+    assert r.status_code == 401
+
+
 def test_patch_hero_partial_update(client):
     headers = register_and_login(client)
     client.post(
@@ -143,7 +148,7 @@ def test_patch_hero_partial_update(client):
         json={"name": "D", "secret_name": "s", "age": 25},
         headers=headers,
     )
-    r = client.patch("/heroes/1", json={"age": 30})
+    r = client.patch("/heroes/1", json={"age": 30}, headers=headers)
     assert r.status_code == 200
     assert r.json()["age"] == 30
     assert r.json()["name"] == "D"   # 未提交的字段保持不变

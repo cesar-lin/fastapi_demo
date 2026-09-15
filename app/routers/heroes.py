@@ -33,7 +33,8 @@ def read_hero(hero_id: int, session: SessionDep):
 
 
 @router.patch("/{hero_id}", response_model=HeroPublic)
-def update_hero(hero_id: int, hero: HeroUpdate, session: SessionDep):
+def update_hero(hero_id: int, hero: HeroUpdate, session: SessionDep, user: CurrentUser):
+    """写操作需要登录，与创建/删除的权限设计保持一致"""
     db_hero = session.get(Hero, hero_id)
     if not db_hero:
         raise HTTPException(404, "英雄不存在")
